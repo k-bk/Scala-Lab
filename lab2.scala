@@ -31,8 +31,10 @@ trait Simplifiable {
   
 object Fraction {
   // one of the "creational patterns/idioms"
-  def apply(num: Int, denom: Int, loggable: Boolean = false): Fraction =
-    if (loggable) new LoggableImpl(num, denom) else new DefaultImpl(num, denom) 
+  def apply(num: Int, denom: Int, loggable: Boolean = false, simplifiable: Boolean = false): Fraction =
+    if (loggable) new LoggableImpl(num, denom) 
+    else if (simplifiable) new SimplifiableImpl(num, denom)
+    else new DefaultImpl(num, denom) 
   
   private class DefaultImpl(val num: Int, val denom: Int) extends Fraction {
     override def *(other: Fraction): Fraction =
@@ -46,7 +48,7 @@ object Fraction {
     override def toString() = num.toString + "/" + denom.toString
   }
    
-  private class LoggableImpl(num: Int, denom: Int) extends DefaultImpl(num, denom) with Loggable with Simplifiable {
+  private class LoggableImpl(num: Int, denom: Int) extends DefaultImpl(num, denom) with Loggable {
     def timeStamp = System.nanoTime // to keep the example short...
     override def *(other: Fraction): Fraction = {
       log(timeStamp, "multiplying " + this.toString + " by " + other.toString)
@@ -65,18 +67,25 @@ object Fraction {
       Fraction(this.num * other.denom, this.denom * other.num, true)
     }
   }
+
+  private class SimplifiableImpl(num: Int, denom: Int) extends DefaultImpl(num, denom) with Simplifiable {
+    override def *(other: Fraction): Fraction = simplify(super.*(other))
+    override def +(other: Fraction): Fraction = simplify(super.-(other))
+    override def /(other: Fraction): Fraction = simplify(super./(other))
+    override def -(other: Fraction): Fraction = simplify(super.-(other))
+  }
 }
   
 object Appl {
   def main(agrs: Array[String]) {
-    val f1 = Fraction(3, 7)
-    val f2 = Fraction(4, 9)
-    val f3 = Fraction(1, 19, true)
+    val f1 = Fraction(3, 7, false, true)
+    val f2 = Fraction(4, 9, false, true)
+    val f3 = Fraction(1, 19)
     val f1f2 = f1 * f2
-    //println(f1.toString + " * " + f2.toString + " = " + f1f2)
-    //println(f3.toString + " * " + f2.toString + " * " + f1.toString + " = " + (f3 * f2 * f1))
-    //println(f1.toString + " + " + f2.toString + " = " + (f1 + f2))
-    //println(f3.toString + " / " + f2.toString + " + " + f1.toString + " = " + ((f3 * f2) + f1))
-    //println(f1.toString + " - " + f2.toString + " = " + (f1 - f2))
+    println(f1.toString + " * " + f2.toString + " = " + f1f2)
+    println(f3.toString + " * " + f2.toString + " * " + f1.toString + " = " + (f3 * f2 * f1))
+    println(f1.toString + " + " + f2.toString + " = " + (f1 + f2))
+    println(f3.toString + " / " + f2.toString + " + " + f1.toString + " = " + ((f3 * f2) + f1))
+    println(f1.toString + " - " + f2.toString + " = " + (f1 - f2))
   }
 }
